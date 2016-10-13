@@ -1,21 +1,80 @@
 ;;
-;;Sets custom foreground and background colors
+;;configures package manager
 ;;
-;;(custom-set-faces  ;;  only one 'custom-set-faces' entry may exist in .emacs!!
-;;'(default ((t (:foreground "white" :background "black" :bold t))) t)
-;; '(default ((t (:foreground "white" :background "black" t))) t)
-;;'(isearch ((t (:foreground "black" :background "yellow"))) t)
-;;)
+(require 'package)
+(require 'cl)
+
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(add-to-list 'package-archives
+             '("marmalade" . "http://marmalade-repo.org/packages/") t)
+(package-initialize)
+
+(defvar required-packages
+  '(
+    ;;auto-complete,
+    ;;yasnippet,
+    web-mode
+    ;;js2-mode
+    ) "a list of packages to ensure are installed at launch.")
+
+
+; method to check if all packages are installed
+(defun packages-installed-p ()
+  (loop for p in required-packages
+        when (not (package-installed-p p)) do (return nil)
+        finally (return t))
+  )
+
+; if not all packages are installed, check one by one and install the missing ones.
+(unless (packages-installed-p)
+  ; check for new packages (package versions)
+  (message "%s" "Emacs is now refreshing its package database...")
+  (package-refresh-contents)
+  (message "%s" " done.")
+  ; install the missing packages
+  (dolist (p required-packages)
+    (when (not (package-installed-p p))
+      (package-install p))))
+
+;; ;;; yasnippet
+;; ;;; should be loaded before auto complete so that they can work together
+;; (require 'yasnippet)
+;; (yas-global-mode 1)
+
+;; ;;; auto complete mod
+;; ;;; should be loaded after yasnippet so that they can work together
+;; (require 'auto-complete-config)
+;; (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+;; (ac-config-default)
+;; ;;; set the trigger key so that it can work together with yasnippet on tab key,
+;; ;;; if the word exists in yasnippet, pressing tab will cause yasnippet to
+;; ;;; activate, otherwise, auto-complete will
+;; (ac-set-trigger-key "TAB")
+;; (ac-set-trigger-key "<tab>");
+
+;;
+;;enables and configures web-mode
+;;
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.scss?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(setq web-mode-content-types-alist
+      '(("jsx" . "\\.js[x]?\\'")))
+
+;;
+;;enables and configures js2-mode
+;;
+;; (add-hook 'js-mode-hook 'js2-minor-mode)
+;; (add-hook 'js2-mode-hook 'ac-js2-mode)
 
 ;;
 ;;Don't make backup files 
 ;;
 (setq make-backup-files nil)
 
-;;
-;;Sets up emacs packages 
-;;
- 
 ;;
 ;;inhibits start menu
 ;;
@@ -35,7 +94,28 @@
 ;;
 ;;custom keyboard command for switching windows 
 ;;
-(global-set-key (kbd "M-<left>") 'windmove-left)
-(global-set-key (kbd "M-<right>") 'windmove-right)
-(global-set-key (kbd "M-<up>") 'windmove-up)
-(global-set-key (kbd "M-<down>") 'windmove-down)
+(windmove-default-keybindings)
+
+;;
+;;disables the menu bar
+;;
+(menu-bar-mode -1) 
+
+;;
+;;disable scrollbar
+;;
+(toggle-scroll-bar -1) 
+
+;;
+;;disable the toolbar
+;;
+(tool-bar-mode -1) 
+
+;;
+;;set theme
+;;
+(custom-set-variables
+ '(custom-enabled-themes (quote (wombat))))
+(custom-set-faces)
+
+
